@@ -9,6 +9,7 @@
 #include <cstdio>
 
 #include "L0_LowLevel/LPC40xx.h"
+#include "utility/bit.hpp"
 #include "utility/macros.hpp"
 
 class PinInterface
@@ -87,78 +88,69 @@ class Pin : public PinInterface
   void SetPinFunction(uint8_t function) override
   {
     pin_map->_register[port_][pin_] =
-        BitPlace(pin_map->_register[port_][pin_], PinBitMap::kFunction,
-                 function & 0b111, 3);
+        bit::Insert(pin_map->_register[port_][pin_], PinBitMap::kFunction,
+                    function & 0b111, 3);
   }
   void SetMode(PinInterface::Mode mode) override
   {
     uint8_t ui_mode                 = static_cast<uint8_t>(mode);
-    pin_map->_register[port_][pin_] = BitPlace(
+    pin_map->_register[port_][pin_] = bit::Insert(
         pin_map->_register[port_][pin_], PinBitMap::kMode, ui_mode & 0b11, 2);
   }
   void EnableHysteresis(bool enable_hysteresis = true) override
   {
     pin_map->_register[port_][pin_] =
-        BitPlace(pin_map->_register[port_][pin_], PinBitMap::kHysteresis,
-                 enable_hysteresis, 1);
+        bit::Insert(pin_map->_register[port_][pin_], PinBitMap::kHysteresis,
+                    enable_hysteresis, 1);
   }
   void SetAsActiveLow(bool set_as_active_low = true) override
   {
     pin_map->_register[port_][pin_] =
-        BitPlace(pin_map->_register[port_][pin_], PinBitMap::kInputInvert,
-                 set_as_active_low, 1);
+        bit::Insert(pin_map->_register[port_][pin_], PinBitMap::kInputInvert,
+                    set_as_active_low, 1);
   }
   // Set bit to 0 to enable analog mode
   void SetAsAnalogMode(bool set_as_analog = true) override
   {
     pin_map->_register[port_][pin_] =
-        BitPlace(pin_map->_register[port_][pin_], PinBitMap::kAnalogDigitalMode,
-                 !set_as_analog, 1);
+        bit::Insert(pin_map->_register[port_][pin_],
+                    PinBitMap::kAnalogDigitalMode, !set_as_analog, 1);
   }
   // Enable by setting bit to 0 to enable digital filter.
   void EnableDigitalFilter(bool enable_digital_filter = true) override
   {
     pin_map->_register[port_][pin_] =
-        BitPlace(pin_map->_register[port_][pin_], PinBitMap::kDigitalFilter,
-                 !enable_digital_filter, 1);
+        bit::Insert(pin_map->_register[port_][pin_], PinBitMap::kDigitalFilter,
+                    !enable_digital_filter, 1);
   }
   void EnableFastMode(bool enable_fast_mode = true) override
   {
-    pin_map->_register[port_][pin_] = BitPlace(
+    pin_map->_register[port_][pin_] = bit::Insert(
         pin_map->_register[port_][pin_], PinBitMap::kSlew, enable_fast_mode, 1);
   }
   // Enable by setting bit to 0 for i2c high speed mode
   void EnableI2cHighSpeedMode(bool enable_high_speed = true) override
   {
     pin_map->_register[port_][pin_] =
-        BitPlace(pin_map->_register[port_][pin_], PinBitMap::kI2cHighSpeed,
-                 !enable_high_speed, 1);
+        bit::Insert(pin_map->_register[port_][pin_], PinBitMap::kI2cHighSpeed,
+                    !enable_high_speed, 1);
   }
   void EnableI2cHighCurrentDrive(bool enable_high_current = true) override
   {
     pin_map->_register[port_][pin_] =
-        BitPlace(pin_map->_register[port_][pin_],
-                 PinBitMap::kI2cHighCurrentDrive, enable_high_current, 1);
+        bit::Insert(pin_map->_register[port_][pin_],
+                    PinBitMap::kI2cHighCurrentDrive, enable_high_current, 1);
   }
   void SetAsOpenDrain(bool set_as_open_drain = true) override
   {
     pin_map->_register[port_][pin_] =
-        BitPlace(pin_map->_register[port_][pin_], PinBitMap::kOpenDrain,
-                 set_as_open_drain, 1);
+        bit::Insert(pin_map->_register[port_][pin_], PinBitMap::kOpenDrain,
+                    set_as_open_drain, 1);
   }
   void EnableDac(bool enable_dac = true) override
   {
-    pin_map->_register[port_][pin_] = BitPlace(
+    pin_map->_register[port_][pin_] = bit::Insert(
         pin_map->_register[port_][pin_], PinBitMap::kDacEnable, enable_dac, 1);
-  }
-  inline uint32_t BitPlace(uint32_t target, uint32_t position, uint32_t value,
-                           uint32_t value_width)
-  {
-    // Generate mask with all 1s
-    uint32_t mask = 0xFFFFFFFF >> (32 - value_width);
-    target &= ~(mask << position);
-    target |= (value & mask) << position;
-    return target;
   }
   uint8_t GetPort() const override
   {
